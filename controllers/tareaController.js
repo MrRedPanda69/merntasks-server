@@ -26,5 +26,87 @@ exports.crearTarea = async (req, res) => {
         console.log(error);
         res.status(500).send('Hubo un error');
     }
+}
 
+// Get tareas por proyecto
+exports.getTarea = async (req, res) => {
+    try {
+        // Extraer Proyecto y checar si existe
+        const { proyecto } = req.body;
+
+        const existeProyecto = await Proyecto.findById(proyecto);
+        if(!existeProyecto) res.status(404).json({ msg: 'Ups, proyecto no encontrado :c'});
+
+        // Revisar si proyecto actual pertenece al user
+        if( existeProyecto.creador.toString() !== req.usuario.id ) res.status(401).json({ msg: 'Ups, no estás autorizado para esto :/'});
+
+        // Get tareas por proyecto
+        const tareas = await Tarea.find({ proyecto });
+        res.json({ tareas });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Hubo un error');
+    }
+}
+
+// Update tarea
+exports.updateTarea = async (req, res) => {
+    try {
+        // Extraer Proyecto y checar si existe
+        const { proyecto, nombre, estado } = req.body;
+
+        // Revisar si tarea exite
+        let tarea = await Tarea.findById(req.params.id);
+
+        if(!tarea) res.status(404).json({ msg: 'Ups, tarea no encontrada :c'});
+
+        // Extraer proyecto 
+        const existeProyecto = await Proyecto.findById(proyecto);
+
+        // Revisar si proyecto actual pertenece al user
+        if( existeProyecto.creador.toString() !== req.usuario.id ) res.status(401).json({ msg: 'Ups, no estás autorizado para esto :/'});
+
+        // Crear obj con la nueva info 
+        const newTarea = {};
+
+        if(nombre) newTarea.nombre = nombre;
+        if(estado) newTarea.estado = estado;
+
+
+        // Guardar tarea 
+        tarea = await Tarea.findOneAndUpdate({ _id: req.params.id }, newTarea, { new: true });
+        res.json({ tarea });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Hubo un error');
+    }
+}
+
+// Delete tarea
+exports.deleteTarea = async (req, res) => {
+    try {
+        // Extraer Proyecto y checar si existe
+        const { proyecto } = req.body;
+
+        // Revisar si tarea exite
+        let tarea = await Tarea.findById(req.params.id);
+
+        if(!tarea) res.status(404).json({ msg: 'Ups, tarea no encontrada :c'});
+
+        // Extraer proyecto 
+        const existeProyecto = await Proyecto.findById(proyecto);
+
+        // Revisar si proyecto actual pertenece al user
+        if( existeProyecto.creador.toString() !== req.usuario.id ) res.status(401).json({ msg: 'Ups, no estás autorizado para esto :/'});
+
+        // Eliminar 
+        await Tarea.findOneAndRemove({ _id: req.params.id });
+        res.json({ msg: 'Tarea eliminada'});
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Hubo un error');
+    }
 }
