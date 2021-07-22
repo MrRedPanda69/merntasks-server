@@ -41,4 +41,51 @@ exports.updateProyecto = async (req, res) => {
     // Revisar si hay errores
     const errores = validationResult(req);
     if( !errores.isEmpty() ) res.status(400).json({ errores: errores.array() });
+
+    // Extraer info del proyecto
+    const { nombre } = req.body;
+    const newProyecto = {};
+
+    if(nombre) newProyecto.nombre = nombre;
+
+    try {
+        // Revisar ID
+        let proyecto = await Proyecto.findById(req.params.id);
+
+        // Revisar si existe el proyecto
+        if(!proyecto) res.status(404).json({ msg: 'Ups, proyecto no encontrado :c' });
+
+        // Verificar creador del proyecto
+        if( proyecto.creador.toString() !== req.usuario.id ) res.status(401).json({ msg: 'Ups, no estás autorizador para esto :/'});
+
+        // Update
+        proyecto = await Proyecto.findOneAndUpdate({ _id: req.params.id }, { $set: newProyecto }, { new: true });
+        res.json({ proyecto });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Error en el server');
+    }
+}
+
+// Eliminar Proyecto por ID
+exports.deleteProyecto = async (req, res) => {
+    try {
+        // Revisar ID
+        let proyecto = await Proyecto.findById(req.params.id);
+
+        // Revisar si existe el proyecto
+        if(!proyecto) res.status(404).json({ msg: 'Ups, proyecto no encontrado :c' });
+
+        // Verificar creador del proyecto
+        if( proyecto.creador.toString() !== req.usuario.id ) res.status(401).json({ msg: 'Ups, no estás autorizador para esto :/'});
+
+        // Eliminar Proyecto
+        await Proyecto.findOneAndRemove({ _id: req.params.id });
+        res.json({ msg: 'Proyecto eliminado' });
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Error en el server');
+    }
 }
