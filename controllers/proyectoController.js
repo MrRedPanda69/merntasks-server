@@ -56,7 +56,7 @@ exports.updateProyecto = async (req, res) => {
         if(!proyecto) res.status(404).json({ msg: 'Ups, proyecto no encontrado :c' });
 
         // Verificar creador del proyecto
-        if( proyecto.creador.toString() !== req.usuario.id ) res.status(401).json({ msg: 'Ups, no estás autorizador para esto :/'});
+        if( proyecto.creador.toString() !== req.usuario.id ) res.status(401).json({ msg: 'Ups, no estás autorizado para esto :/'});
 
         // Update
         proyecto = await Proyecto.findOneAndUpdate({ _id: req.params.id }, { $set: newProyecto }, { new: true });
