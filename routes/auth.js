@@ -3,8 +3,9 @@ const express = require('express');
 const router = express.Router();
 const { check } = require('express-validator');
 const authController = require('../controllers/authController');
+const auth = require('../middlewares/auth');
 
-// autenticar user 
+// Iniciar sesion 
 // api/auth 
 router.post('/',
     [
@@ -13,5 +14,11 @@ router.post('/',
     ],
     authController.authUsuario
 );
+
+// Obtiene user auth 
+router.get('/',
+    auth,
+    authController.usuarioAuth
+)
 
 module.exports = router;
